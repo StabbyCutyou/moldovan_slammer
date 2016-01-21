@@ -3,6 +3,10 @@ Moldovan Slammer
 
 The Moldovan Slammer is used to generate random values to plug into a sample input string, which is meant to be something you'd run against a database (like bulk loading insert statements full of random data, hence the name "slammer"). It understands the tokens as defined below:
 
+# Notice
+
+Experimental - could change at a notice. Have fun!
+
 # Tokens
 
 ## {guid:ordinal}

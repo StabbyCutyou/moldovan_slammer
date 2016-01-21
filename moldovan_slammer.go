@@ -2,13 +2,14 @@ package main
 
 import (
 	"bytes"
+	crand "crypto/rand"
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -49,11 +50,13 @@ func main() {
 		line, err := buildSQL(cfg.input)
 		// Import it into sql here
 		if err == nil {
-			_, err = db.Exec(line)
 			numLines++
-			if err != nil {
-				fmt.Println(err)
-			}
+			go func() {
+				_, err = db.Exec(line)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}()
 		} else if err != nil {
 			fmt.Println("Could not generate SQL: " + err.Error())
 		}
@@ -104,6 +107,21 @@ func buildSQL(inputTemplate string) (string, error) {
 	}
 
 	return result.String(), nil
+}
+
+// This function was borrowed with permission from the following location
+// https://github.com/dgryski/trifles/blob/master/uuid/uuid.go
+// All credit / lawsuits can be forwarded to Damian Gryski and Russ Cox
+func uuidv4() string {
+	b := make([]byte, 16)
+	_, err := io.ReadFull(crand.Reader, b)
+	if err != nil {
+		// probably "shouldn't happen"
+		log.Fatal(err)
+	}
+	b[6] = (b[6] & 0x0F) | 0x40
+	b[8] = (b[8] &^ 0x40) | 0x80
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
 
 func resolveWord(objectCache map[string]interface{}, parts ...string) (string, error) {
@@ -288,16 +306,9 @@ func guid(objectCache map[string]interface{}, opts ...string) (string, error) {
 			return "", fmt.Errorf("Ordinal %d has not yet been encountered for guids. Please check your input string", ordinal)
 		}
 		return cache[ordinal], nil
-		// There is apparently no fantastic way to generate guids / uuids in go?
-		// There are some libraries, but apparently there is no standard, correct implementation.
-		// Thus, I do this instead:
 	}
-	out, err := exec.Command("uuidgen").Output()
-	if err != nil {
-		return "", err
-	}
-	guid := strings.Trim(string(out), "\n")
 
+	guid := uuidv4()
 	// store it in the cache
 	c, _ := objectCache["guid"]
 	cache := c.([]string)
