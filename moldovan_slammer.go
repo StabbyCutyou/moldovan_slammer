@@ -47,12 +47,10 @@ func main() {
 		line, err := buildSQL(cfg.input)
 		// Import it into sql here
 		if err == nil {
-			go func() {
-				_, err2 := db.Exec(line)
-				if err2 != nil {
-					fmt.Println(err2)
-				}
-			}()
+			_, err2 := db.Exec(line)
+			if err2 != nil {
+				fmt.Println(err2)
+			}
 		} else if err != nil {
 			fmt.Println("Could not generate SQL: " + err.Error())
 		}
