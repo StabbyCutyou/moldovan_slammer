@@ -42,15 +42,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	keepRunning := true
-	numLines := 0
-
-	for keepRunning == true {
+	for i := 0; i < cfg.iterations; i++ {
 		// Build the line
 		line, err := buildSQL(cfg.input)
 		// Import it into sql here
 		if err == nil {
-			numLines++
 			go func() {
 				_, err = db.Exec(line)
 				if err != nil {
@@ -60,11 +56,7 @@ func main() {
 		} else if err != nil {
 			fmt.Println("Could not generate SQL: " + err.Error())
 		}
-		if numLines == cfg.iterations {
-			keepRunning = false
-		} else {
-			time.Sleep(cfg.pauseInterval)
-		}
+		time.Sleep(cfg.pauseInterval)
 	}
 }
 
