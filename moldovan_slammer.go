@@ -31,7 +31,7 @@ type config struct {
 }
 
 func main() {
-	fmt.Print("Welcome to the Moldovan Slammer")
+	fmt.Print("Welcome to the Moldovan Slammer\n")
 	cfg, err := getConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -48,9 +48,9 @@ func main() {
 		// Import it into sql here
 		if err == nil {
 			go func() {
-				_, err = db.Exec(line)
-				if err != nil {
-					fmt.Println(err)
+				_, err2 := db.Exec(line)
+				if err2 != nil {
+					fmt.Println(err2)
 				}
 			}()
 		} else if err != nil {
@@ -324,6 +324,7 @@ func getConfig() (*config, error) {
 	if iterations, err = strconv.Atoi(i); err != nil {
 		return nil, errors.New("MS_ITERATIONS must be a valid integer (-1 for unlimited)")
 	}
+
 	cfg := &config{
 		connString:    os.Getenv("MS_CONNSTRING"),
 		input:         os.Getenv("MS_INPUT"),
