@@ -85,3 +85,11 @@ Slammer will replace any instance of {country} with an ISO 3166-1 alpha-2 countr
 {country} supports the same :case argument as {char}. The default value is "up"
 
 {country} also supports the same :ordinal argument as {guid}. Because of how the template is interpreted, you must provide the optional :case argument if you are also to specify an ordinal.
+
+# Roadmap
+
+Eventually I will likely break this apart into 2 packages, or at the very least 2 sub-packages: Moldova, the light weight template interpreter, and Slammer, the SQL data-loader.
+
+I'll also continue to add support for more random value categories, such as a general {time} field, as well as add support for generating data using the full unicode table, and not just the ASCII characters a - z.
+
+I also want to come up with a better internal design for how the interpreter is organized and architected, but I'm waiting until I have a richer feature set before I tackly an overall re-design of the current implementation. This likely won't happen until I split the libraries into Moldova and Slammer.
