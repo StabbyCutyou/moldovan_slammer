@@ -1,74 +1,34 @@
-package slammer
+package moldova
 
 import (
 	"bytes"
 	crand "crypto/rand"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"math/rand"
-	"os"
 	"strconv"
 	"strings"
 	"time"
-	// Load the driver only
-	_ "github.com/go-sql-driver/mysql"
 )
 
 const randomChars string = "abcdefghijklmnopqrstuvwxyz"
-
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-}
-
-type config struct {
-	connString    string
-	input         string
-	pauseInterval time.Duration
-	iterations    int
-}
-
-func main() {
-	fmt.Print("Welcome to the Moldovan Slammer\n")
-	cfg, err := getConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db, err := sql.Open("mysql", cfg.connString)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for i := 0; i < cfg.iterations; i++ {
-		// Build the line
-		line, err := buildSQL(cfg.input)
-		// Import it into sql here
-		if err == nil {
-			_, err2 := db.Exec(line)
-			if err2 != nil {
-				fmt.Println(err2)
-			}
-		} else if err != nil {
-			fmt.Println("Could not generate SQL: " + err.Error())
-		}
-		time.Sleep(cfg.pauseInterval)
-	}
-}
 
 func newObjectCache() map[string]interface{} {
 	return map[string]interface{}{"guid": make([]string, 0), "now": make([]string, 0), "country": make([]string, 0)}
 }
 
-func buildSQL(inputTemplate string) (string, error) {
+// ParseTemplate will take an input string of text, and replace any recongized
+// tokens with a random value that is determined for each type of token
+func ParseTemplate(inputTemplate string) (string, error) {
 	// Supports:
 	// {guid:ordinal}
 	// {int:lower:upper}
 	// {now:ordinal}
 	// {float:lower:upper}
 	// {char:num:case}
+	// {country:case:ordinal}
 	objectCache := newObjectCache()
 	var result bytes.Buffer
 	var wordBuffer bytes.Buffer
@@ -352,39 +312,4 @@ func guid(objectCache map[string]interface{}, opts ...string) (string, error) {
 
 	return guid, nil
 
-}
-
-// I went with an ENV var based config sheerly out of simplicity sake. I'm considering
-// moving to CLI based flags instead but not worth it at the moment
-func getConfig() (*config, error) {
-	duration := os.Getenv("MS_PAUSEINTERVAL")
-	if duration == "" {
-		return nil, errors.New("MS_PAUSEINTERVAL must be set")
-	}
-	d, err := time.ParseDuration(duration)
-	if err != nil {
-		return nil, err
-	}
-	iterations := -1
-	i := os.Getenv("MS_ITERATIONS")
-	if iterations, err = strconv.Atoi(i); err != nil {
-		return nil, errors.New("MS_ITERATIONS must be a valid integer (-1 for unlimited)")
-	}
-
-	cfg := &config{
-		connString:    os.Getenv("MS_CONNSTRING"),
-		input:         os.Getenv("MS_INPUT"),
-		pauseInterval: d,
-		iterations:    iterations,
-	}
-
-	if cfg.connString == "" {
-		return nil, errors.New("MS_CONNSTRING must be set")
-	}
-
-	if cfg.input == "" {
-		return nil, errors.New("MS_INPUT must be set")
-	}
-
-	return cfg, nil
 }

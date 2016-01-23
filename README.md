@@ -1,11 +1,21 @@
 Moldovan Slammer
 ==================
 
-The Moldovan Slammer is used to generate random values to plug into a sample input string, which is meant to be something you'd run against a database (like bulk loading insert statements full of random data, hence the name "slammer"). It understands the tokens as defined below:
+The Moldovan Slammer is comprised of two packages: Moldova, and the Slammer.
+
+# Moldova
+Moldova is a lightweight template interpreter, used to generate random values to plug into a template, as defined by a series of custom tokens.
+
+It understands the tokens as defined further down in the document.
+
+# Slammer
+Slammer is a simple utility using Moldova, for load testing a database. You can give it a template SQL query, most likely an INSERT
+statement, and use that to generate a large volume of traffic, each request having a different set of values placed into it. In this way,
+the Slammer makes an excellent tool for massively loading fake data into a database for load testing.
 
 # Notice
 
-Experimental - could change at a notice. Have fun!
+Experimental - could change at a notice. Or, without notice. Have fun!
 
 # Example usage
 
@@ -96,11 +106,11 @@ Slammer will replace any instance of {country} with an ISO 3166-1 alpha-2 countr
 
 # Roadmap
 
-Eventually I will likely break this apart into 2 packages, or at the very least 2 sub-packages: Moldova, the light weight template interpreter, and Slammer, the SQL data-loader.
-
-I'll also continue to add support for more random value categories, such as a general {time} field, as well as add support for generating data using the full unicode table, and not just the ASCII characters a - z.
+I'll continue to add support for more random value categories, such as a general {time} field, as well as add support for generating data using the full unicode table, and not just the ASCII characters a - z.
 
 I also want to come up with a better internal design for how the interpreter is organized and architected, but I'm waiting until I have a richer feature set before I tackly an overall re-design of the current implementation. This likely won't happen until I split the libraries into Moldova and Slammer.
+
+I also plan on making it possible to swap the current driver (mysql compatible databases only) for another one, longer term.
 
 # License
 

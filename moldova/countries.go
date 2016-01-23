@@ -1,4 +1,4 @@
-package slammer
+package moldova
 
 // CountryCodes is a list of Country Codes gathered from here:
 // https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements
