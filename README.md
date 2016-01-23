@@ -29,6 +29,14 @@ How many times to run the statements overall
 MS_PAUSEINTERVAL=200us MS_ITERATIONS=200000 MS_CONNSTRING="root@tcp(127.0.0.1:3306)/my_db" MS_INPUT="INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{int:100:1000},{int:1:40},'{now}','{now:0}','{char:2:up}',NULL,-3)" ./moldovan_slammer
 ```
 
+This would provide sample output like the following:
+
+```sql
+INSERT INTO floof VALUES ('30f25ace-22f1-4a26-b3c0-190d0ac343ca','30f25ace-22f1-4a26-b3c0-190d0ac343ca','DM',-1427,562,978,34,'2016-01-23T14:46:21-05:00','2016-01-23T14:46:21-05:00','HE',NULL,-3)
+INSERT INTO floof VALUES ('7a0beaa3-3e48-4da7-8bf7-36e570d5af6a','7a0beaa3-3e48-4da7-8bf7-36e570d5af6a','JO',-818,243,603,13,'2016-01-23T14:46:23-05:00','2016-01-23T14:46:23-05:00','UR',NULL,-3)
+INSERT INTO floof VALUES ('83669094-0d59-4307-87a7-d56ac6516343','83669094-0d59-4307-87a7-d56ac6516343','CR',-1705,601,697,31,'2016-01-23T14:46:25-05:00','2016-01-23T14:46:25-05:00','UG',NULL,-3)
+```
+
 # Tokens
 
 ## {guid:ordinal}
