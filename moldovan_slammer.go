@@ -215,7 +215,7 @@ func float(opts ...string) (string, error) {
 	// get the difference between them
 	diff := upperBound - lowerBound
 	// Since this supports negatives, need to handle some special corner cases?
-	if lowerBound < 0 && upperBound <= 0 {
+	if lowerBound < 0.0 && upperBound <= 0.0 {
 		// if the range is entirely negative
 		negateResult = true
 		// Swap them, so they are still the same relative distance from eachother, but positive - invert the result
@@ -226,9 +226,8 @@ func float(opts ...string) (string, error) {
 	// neg to pos ranges currently not supported
 	// else both are positive
 	// get a number from 0 to diff
-	n := rand.Float64()*diff + lowerBound
-	// add lowerbound to it - now it's between lower and upper
-	n += lowerBound
+	n := (rand.Float64() * diff) + lowerBound
+
 	if negateResult {
 		n = -n
 	}
