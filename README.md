@@ -93,3 +93,7 @@ Eventually I will likely break this apart into 2 packages, or at the very least 
 I'll also continue to add support for more random value categories, such as a general {time} field, as well as add support for generating data using the full unicode table, and not just the ASCII characters a - z.
 
 I also want to come up with a better internal design for how the interpreter is organized and architected, but I'm waiting until I have a richer feature set before I tackly an overall re-design of the current implementation. This likely won't happen until I split the libraries into Moldova and Slammer.
+
+# License
+
+Apache v2 - See LICENSE
