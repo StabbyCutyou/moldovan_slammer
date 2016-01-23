@@ -32,7 +32,7 @@ time.Now() function, formatted per the time.RFC3339 format.
 
 {now} also supports the same :ordinal option as {guid}
 
-## {interger:lower:upper}
+## {integer:lower:upper}
 
 Slammer will replace any instance of {integer} with a random int value, optionally between the range provided. The defaults, if not provided, are 0 to 100.
 
