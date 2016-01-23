@@ -7,6 +7,28 @@ The Moldovan Slammer is used to generate random values to plug into a sample inp
 
 Experimental - could change at a notice. Have fun!
 
+# Example usage
+
+Right now, the Slammer gets configured via environment variables. This may change to a flag-based approach in the future.
+
+### MS_CONNSTRING
+The connection string for your database
+
+### MS_INPUT
+The template you wish to turn into a series of inserts - see below for examples
+
+### MS_PAUSEINTERVAL
+A valid time.Duration parsable string representing how long to wait in between each run of the statement.
+
+### MS_ITERATIONS
+How many times to run the statements overall
+
+## Example
+
+```bash
+MS_PAUSEINTERVAL=200us MS_ITERATIONS=200000 MS_CONNSTRING="root@tcp(127.0.0.1:3306)/my_db" MS_INPUT="INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{int:100:1000},{int:1:40},'{now}','{now:0}','{char:2:up}',NULL,-3)" ./moldovan_slammer
+```
+
 # Tokens
 
 ## {guid:ordinal}
