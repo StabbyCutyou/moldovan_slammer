@@ -1,20 +1,16 @@
 package slammer
 
-import (
-	"fmt"
-	"testing"
-)
+import "testing"
 
 // TODO Test each random function individually, under a number of inputs to make supported
 // all the options behave as expected.
 
 func TestBuildSQL(t *testing.T) {
-	template := "INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{int:100:1000},{int:1:40},'{now}','{now:0}','{char:2:up}',NULL,-3)"
-	te, err := buildSQL(template)
+	template := "INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{float:-1000.0:-540.0},{int:1:40},'{now}','{now:0}','{char:2:up}',NULL,-3)"
+	_, err := buildSQL(template)
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(te)
 }
 
 func TestCountries(t *testing.T) {

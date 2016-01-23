@@ -26,15 +26,15 @@ How many times to run the statements overall
 ## Example
 
 ```bash
-MS_PAUSEINTERVAL=200us MS_ITERATIONS=200000 MS_CONNSTRING="root@tcp(127.0.0.1:3306)/my_db" MS_INPUT="INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{int:100:1000},{int:1:40},'{now}','{now:0}','{char:2:up}',NULL,-3)" ./moldovan_slammer
+MS_PAUSEINTERVAL=200us MS_ITERATIONS=200000 MS_CONNSTRING="root@tcp(127.0.0.1:3306)/my_db" MS_INPUT="INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{float:-1000.0:-540.0},{int:1:40},'{now}','{now:0}','{char:2:up}',NULL,-3)" ./moldovan_slammer
 ```
 
 This would provide sample output like the following:
 
 ```sql
-INSERT INTO floof VALUES ('30f25ace-22f1-4a26-b3c0-190d0ac343ca','30f25ace-22f1-4a26-b3c0-190d0ac343ca','DM',-1427,562,978,34,'2016-01-23T14:46:21-05:00','2016-01-23T14:46:21-05:00','HE',NULL,-3)
-INSERT INTO floof VALUES ('7a0beaa3-3e48-4da7-8bf7-36e570d5af6a','7a0beaa3-3e48-4da7-8bf7-36e570d5af6a','JO',-818,243,603,13,'2016-01-23T14:46:23-05:00','2016-01-23T14:46:23-05:00','UR',NULL,-3)
-INSERT INTO floof VALUES ('83669094-0d59-4307-87a7-d56ac6516343','83669094-0d59-4307-87a7-d56ac6516343','CR',-1705,601,697,31,'2016-01-23T14:46:25-05:00','2016-01-23T14:46:25-05:00','UG',NULL,-3)
+INSERT INTO floof VALUES ('03ad6a7b-a09a-4ede-b410-7a07dc868d0c','03ad6a7b-a09a-4ede-b410-7a07dc868d0c','BI',-1173,717,-1185.063842,32,'2016-01-23T14:50:43-05:00','2016-01-23T14:50:43-05:00','DS',NULL,-3)
+INSERT INTO floof VALUES ('012ba1fa-38dd-4529-9d50-39eb59a3b495','012ba1fa-38dd-4529-9d50-39eb59a3b495','MX',-1582,555,-1259.542916,16,'2016-01-23T14:50:45-05:00','2016-01-23T14:50:45-05:00','KR',NULL,-3)
+INSERT INTO floof VALUES ('188058a2-47d6-4cbc-93dc-b61cd3e1d29c','188058a2-47d6-4cbc-93dc-b61cd3e1d29c','FO',-1635,717,-1192.019471,34,'2016-01-23T14:50:47-05:00','2016-01-23T14:50:47-05:00','ER',NULL,-3)
 ```
 
 # Tokens
