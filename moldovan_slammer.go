@@ -1,4 +1,4 @@
-package main
+package slammer
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
+	// Load the driver only
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -59,7 +59,7 @@ func main() {
 }
 
 func newObjectCache() map[string]interface{} {
-	return map[string]interface{}{"guid": make([]string, 0), "now": make([]string, 0)}
+	return map[string]interface{}{"guid": make([]string, 0), "now": make([]string, 0), "country": make([]string, 0)}
 }
 
 func buildSQL(inputTemplate string) (string, error) {
@@ -126,9 +126,15 @@ func resolveWord(objectCache map[string]interface{}, parts ...string) (string, e
 		return float(parts[1:]...)
 	case "char":
 		return char(parts[1:]...)
+	case "country":
+		return country(objectCache, parts[1:]...)
 	}
 	return "", nil
 }
+
+// TODO All the below functions need way better commenting and parameter annotations
+// It's described in the readme, but I should probably make these public and then
+// give them proper comments, so that GoDoc can also document them
 
 func integer(opts ...string) (string, error) {
 	lowerBound := 0
@@ -229,6 +235,47 @@ func float(opts ...string) (string, error) {
 	return fmt.Sprintf("%f", n), nil
 }
 
+func country(objectCache map[string]interface{}, opts ...string) (string, error) {
+	charCase := "up"
+
+	if len(opts) > 0 {
+		charCase = opts[0]
+	}
+
+	if len(opts) > 1 {
+		// We want to re-use an existing country
+		ordinal, err := strconv.Atoi(opts[1])
+		if err != nil {
+			return "", err
+		}
+		c, _ := objectCache["country"]
+		cache := c.([]string)
+		if len(cache) < ordinal {
+			return "", fmt.Errorf("Ordinal %d has not yet been encountered for countries. Please check your input string", ordinal)
+		}
+		country := cache[ordinal]
+		// Countries go into the cache upper case, only check for lowering it
+		if charCase == "down" {
+			return strings.ToLower(country), nil
+		}
+		return country, nil
+	}
+	// Generate a new one
+	n := rand.Intn(len(CountryCodes))
+	country := CountryCodes[n]
+	// store it in the cache
+	c, _ := objectCache["country"]
+	cache := c.([]string)
+	objectCache["country"] = append(cache, country)
+
+	if charCase == "down" {
+		return strings.ToLower(country), nil
+	}
+
+	return country, nil
+
+}
+
 func char(opts ...string) (string, error) {
 	charCase := "down"
 	numChars := 2
@@ -308,6 +355,8 @@ func guid(objectCache map[string]interface{}, opts ...string) (string, error) {
 
 }
 
+// I went with an ENV var based config sheerly out of simplicity sake. I'm considering
+// moving to CLI based flags instead but not worth it at the moment
 func getConfig() (*config, error) {
 	duration := os.Getenv("MS_PAUSEINTERVAL")
 	if duration == "" {

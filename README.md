@@ -44,7 +44,7 @@ Slammer will replace any instance of {float} with a random Float64, optionally b
 
 {float} currently does not support :ordinal
 
-# {char:number:case}
+## {char:number:case}
 
 Slammer will replace any instance of {char} with a randomly generated set of characters,
 optionally up to the number specified by :number. The default value is 2.
@@ -55,3 +55,11 @@ optionally up to the number specified by :number. The default value is 2.
 {char:2:down}
 
 {char} currently does not support :ordinal, nor a mixing of cases
+
+## {country:case:ordinal}
+
+Slammer will replace any instance of {country} with an ISO 3166-1 alpha-2 country code.
+
+{country} supports the same :case argument as {char}. The default value is "up"
+
+{country} also supports the same :ordinal argument as {guid}. Because of how the template is interpreted, you must provide the optional :case argument if you are also to specify an ordinal.

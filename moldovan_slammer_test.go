@@ -1,9 +1,20 @@
-package main
+package slammer
 
 import "testing"
 
+// TODO Test each random function individually, under a number of inputs to make supported
+// all the options behave as expected.
+
 func TestBuildSQL(t *testing.T) {
 	template := "INSERT INTO `floop` VALUES ('{guid}','{guid:0}',{int:-2000:0},{int:100:1000},{int:1:40},'{now}','{now:0}','{char:2:up}',NULL)"
+	_, err := buildSQL(template)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCountries(t *testing.T) {
+	template := "INSERT INTO `floop` VALUES ('{country}','{country:up:0}','{country}','{country:down:1}')"
 	_, err := buildSQL(template)
 	if err != nil {
 		t.Error(err)
