@@ -1,10 +1,9 @@
 package moldova
 
-import (
-	"math/rand"
-	"time"
-)
+import "math/rand"
 
+// If you'd like to see a new range added here, please open a PR, and include a link
+// to wikipedia or another resource demonstrating what characters are in the range
 var PrintableRanges = [][]int{
 	// Cyrillic
 	{0x0400, 0x04ff},
@@ -28,21 +27,22 @@ var PrintableRanges = [][]int{
 	{0x10900, 0x1091f},
 }
 
-func generateRandomString(s int) (string, error) {
-	rand.Seed(time.Now().UnixNano())
-	rarr := make([]rune, 0)
-	for i := 0; i < s; i++ {
+func generateRandomString(length int) string {
+	rarr := make([]rune, length)
+	for i := 0; i < length; i++ {
+		// First, pick which range this character comes from
 		o := rand.Intn(len(PrintableRanges))
 		r := PrintableRanges[o]
+
 		minCharCode := r[0]
 		maxCharCode := r[1]
-
+		// Get the delata between max and min
 		diff := maxCharCode - minCharCode
-
+		// Get a random value within the range specified
 		num := rand.Intn(diff) + minCharCode
-
-		rarr = append(rarr, rune(num))
+		// Turn it into a rune, set it on the result object
+		rarr[i] = rune(num)
 	}
 
-	return string(rarr), nil
+	return string(rarr)
 }
