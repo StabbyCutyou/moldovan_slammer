@@ -254,10 +254,11 @@ func char(opts ...string) (string, error) {
 		numChars = nc
 	}
 
-	result := make([]byte, numChars)
-	for i := 0; i < numChars; i++ {
-		result[i] = randomChars[rand.Intn(len(randomChars))]
+	result, err := generateRandomString(numChars)
+	if err != nil {
+		return "", err
 	}
+
 	if charCase == "up" {
 		return strings.ToUpper(string(result)), nil
 	}
