@@ -11,6 +11,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	// I want to keep files that only exist to help provide sources of data or are
+	// helpers to Moldova in their own subdirectory, for organization reasons. Go
+	// requires that this be it's own package, which means I'd need to reference them
+	// with their package name if I wanted to use them, but I'd rather just have them
+	// all be "considered" part of the same package/namespace. So, I purposefully use
+	// a dot import here to do so, despite that in most cases dot importing is not great
+	. "github.com/StabbyCutyou/moldovan_slammer/moldova/data"
 )
 
 func newObjectCache() map[string]interface{} {
@@ -258,6 +266,26 @@ func char(opts ...string) (string, error) {
 		return strings.ToUpper(string(result)), nil
 	}
 	return string(result), nil
+}
+
+func generateRandomString(length int) string {
+	rarr := make([]rune, length)
+	for i := 0; i < length; i++ {
+		// First, pick which range this character comes from
+		o := rand.Intn(len(PrintableRanges))
+		r := PrintableRanges[o]
+
+		minCharCode := r[0]
+		maxCharCode := r[1]
+		// Get the delata between max and min
+		diff := maxCharCode - minCharCode
+		// Get a random value within the range specified
+		num := rand.Intn(diff) + minCharCode
+		// Turn it into a rune, set it on the result object
+		rarr[i] = rune(num)
+	}
+
+	return string(rarr)
 }
 
 func now(objectCache map[string]interface{}, opts ...string) (string, error) {

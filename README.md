@@ -51,10 +51,7 @@ INSERT INTO floof VALUES ('188058a2-47d6-4cbc-93dc-b61cd3e1d29c','188058a2-47d6-
 
 ## {guid:ordinal}
 
-Slammer will replace any instance of {guid} with a guid, by shelling out to `uuidgen`, available on linux and osx. This is because Golang currently lacks
-a built in standardized way to generate uuids. I'm willing to implement one
-of the many third party options, once someone tells me which one is trustworthy
-and a need is demonstrated
+Slammer will replace any instance of {guid} with a GUID/UUID
 
 If you provide the :ordinal option, for the current line of text being generated,
 you can have the Slammer insert an existing value, rather than a new one. For
@@ -86,8 +83,8 @@ Slammer will replace any instance of {float} with a random Float64, optionally b
 
 ## {char:number:case}
 
-Slammer will replace any instance of {char} with a randomly generated set of characters,
-optionally up to the number specified by :number. The default value is 2.
+Slammer will replace any instance of {char} with a randomly generated set of unicode
+characters, of a length specified by :number. The default value is 2.
 
 {char} also takes the :case argument, which is either 'up' or 'down', like so
 
@@ -95,6 +92,9 @@ optionally up to the number specified by :number. The default value is 2.
 {char:2:down}
 
 {char} currently does not support :ordinal, nor a mixing of cases
+
+Only a certain subset of unicode character ranges are supported by default, as defined
+in the moldova/data/unicode.go file.
 
 ## {country:case:ordinal}
 
