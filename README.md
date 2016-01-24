@@ -106,7 +106,7 @@ Slammer will replace any instance of {country} with an ISO 3166-1 alpha-2 countr
 
 # Roadmap
 
-I'll continue to add support for more random value categories, such as a general {time} field, as well as add support for generating data using the full unicode table, and not just the ASCII characters a - z.
+I'll continue to add support for more random value categories, such as a general {time} field.
 
 I also want to come up with a better internal design for how the interpreter is organized and architected, but I'm waiting until I have a richer feature set before I tackly an overall re-design of the current implementation. This likely won't happen until I split the libraries into Moldova and Slammer.
 

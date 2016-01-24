@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-const randomChars string = "abcdefghijklmnopqrstuvwxyz"
-
 func newObjectCache() map[string]interface{} {
 	return map[string]interface{}{"guid": make([]string, 0), "now": make([]string, 0), "country": make([]string, 0)}
 }
