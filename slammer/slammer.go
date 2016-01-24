@@ -1,4 +1,4 @@
-package slammer
+package main
 
 import (
 	"database/sql"
@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/StabbyCutyou/moldovan_slammer/moldova"
+	// Load the driver only
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type config struct {
@@ -72,6 +74,7 @@ func getConfig() (*config, error) {
 	cfg := &config{
 		connString:    os.Getenv("MS_CONNSTRING"),
 		pauseInterval: d,
+		input:         os.Getenv("MS_INPUT"),
 		iterations:    iterations,
 	}
 

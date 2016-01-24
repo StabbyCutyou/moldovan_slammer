@@ -277,6 +277,7 @@ func generateRandomString(length int) string {
 
 		minCharCode := r[0]
 		maxCharCode := r[1]
+
 		// Get the delata between max and min
 		diff := maxCharCode - minCharCode
 		// Get a random value within the range specified
@@ -284,7 +285,6 @@ func generateRandomString(length int) string {
 		// Turn it into a rune, set it on the result object
 		rarr[i] = rune(num)
 	}
-
 	return string(rarr)
 }
 
@@ -302,7 +302,7 @@ func now(objectCache map[string]interface{}, opts ...string) (string, error) {
 		}
 		return cache[ordinal], nil
 	}
-	now := time.Now().Format(time.RFC3339)
+	now := time.Now().Format(SimpleTimeFormat)
 
 	// store it in the cache
 	c, _ := objectCache["now"]
