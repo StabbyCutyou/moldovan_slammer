@@ -137,13 +137,15 @@ Slammer will replace any instance of {country} with an ISO 3166-1 alpha-2 countr
 
 # Roadmap
 
-I'll continue to add support for more random value categories, such as a general {time} field.
+I'll continue to add support for more random value categories, such as a general {time} field, as well as additions to existing ones (for example, a timezone param for :now)
 
-I also want to come up with a better internal design for how the interpreter is organized and architected, but I'm waiting until I have a richer feature set before I tackly an overall re-design of the current implementation. This likely won't happen until I split the libraries into Moldova and Slammer.
+I also want to come up with a better internal design for how the interpreter is organized and architected, but I'm waiting until I have a more complete feature set before I tackle an overall re-design of the current implementation.
 
 I also plan on making it possible to swap the current driver (mysql compatible databases only) for another one, longer term.
 
-Put the projects in different repos, but right now I'm working on them together for the same project.
+Put the packages in different repos, but right now I'm working on them together for the same project.
+
+Build in a worker model to the Slammer, with knobs to tune how many workers in the pool. This will allow a single slammer to operate be fed a stream of data and work on it more efficiently
 
 # License
 
