@@ -36,9 +36,8 @@ func main() {
 }
 
 func getConfig() (*config, error) {
-	cfg := &config{}
-	var n = flag.Int("n", 1, "The number of times to generate a line of output. Cannot be set lower than 1")
-	var t = flag.String("t", "", "The template to generate results from")
+	n := flag.Int("n", 1, "The number of times to generate a line of output. Cannot be set lower than 1")
+	t := flag.String("t", "", "The template to generate results from")
 	flag.Parse()
 	if *n <= 0 {
 		*n = 1
@@ -46,7 +45,6 @@ func getConfig() (*config, error) {
 	if *t == "" {
 		return nil, errors.New("You must provide a template using the -t option")
 	}
-	cfg.iterations = *n
-	cfg.template = *t
-	return cfg, nil
+
+	return &config{iterations: *n, template: *t}, nil
 }

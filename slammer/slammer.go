@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"database/sql"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -58,23 +59,17 @@ func main() {
 // I went with an ENV var based config sheerly out of simplicity sake. I'm considering
 // moving to CLI based flags instead but not worth it at the moment
 func getConfig() (*config, error) {
-	duration := os.Getenv("MS_PAUSEINTERVAL")
-	if duration == "" {
-		return nil, errors.New("MS_PAUSEINTERVAL must be set")
+	p := flag.String("p", "1s", "The time to pause between each call to the database")
+	c := flag.String("c", "", "The connection string to use when connecting to the database")
+	flag.Parse()
+
+	if *c == "" {
+		return nil, errors.New("You must provide a connection string using the -c option")
 	}
-	d, err := time.ParseDuration(duration)
+	d, err := time.ParseDuration(*p)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("You must provide a proper duration value with -p")
 	}
 
-	cfg := &config{
-		connString:    os.Getenv("MS_CONNSTRING"),
-		pauseInterval: d,
-	}
-
-	if cfg.connString == "" {
-		return nil, errors.New("MS_CONNSTRING must be set")
-	}
-
-	return cfg, nil
+	return &config{connString: *c, pauseInterval: d}, nil
 }
