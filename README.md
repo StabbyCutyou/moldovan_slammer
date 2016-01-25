@@ -66,8 +66,6 @@ How many times to run the statements overall
 ## Example
 
 ```bash
-MS_PAUSEINTERVAL=200us MS_ITERATIONS=200000 MS_CONNSTRING="root@tcp(127.0.0.1:3306)/my_db" MS_INPUT="I" ./moldovan_slammer
-
 moldova -t "INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{float:-1000.0:-540.0},{int:1:40},'{now}','{now:0}','{country:up}',NULL,-3)" -n 100 | slammer -c "root@tcp(127.0.0.1:3306)/my_db" -p 200us
 ```
 
