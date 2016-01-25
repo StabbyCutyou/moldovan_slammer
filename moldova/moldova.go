@@ -1,74 +1,40 @@
-package slammer
+package moldova
 
 import (
 	"bytes"
 	crand "crypto/rand"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"math/rand"
-	"os"
 	"strconv"
 	"strings"
 	"time"
-	// Load the driver only
-	_ "github.com/go-sql-driver/mysql"
+
+	// I want to keep files that only exist to help provide sources of data or are
+	// helpers to Moldova in their own subdirectory, for organization reasons. Go
+	// requires that this be it's own package, which means I'd need to reference them
+	// with their package name if I wanted to use them, but I'd rather just have them
+	// all be "considered" part of the same package/namespace. So, I purposefully use
+	// a dot import here to do so, despite that in most cases dot importing is not great
+	. "github.com/StabbyCutyou/moldovan_slammer/moldova/data"
 )
-
-const randomChars string = "abcdefghijklmnopqrstuvwxyz"
-
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-}
-
-type config struct {
-	connString    string
-	input         string
-	pauseInterval time.Duration
-	iterations    int
-}
-
-func main() {
-	fmt.Print("Welcome to the Moldovan Slammer\n")
-	cfg, err := getConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db, err := sql.Open("mysql", cfg.connString)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for i := 0; i < cfg.iterations; i++ {
-		// Build the line
-		line, err := buildSQL(cfg.input)
-		// Import it into sql here
-		if err == nil {
-			_, err2 := db.Exec(line)
-			if err2 != nil {
-				fmt.Println(err2)
-			}
-		} else if err != nil {
-			fmt.Println("Could not generate SQL: " + err.Error())
-		}
-		time.Sleep(cfg.pauseInterval)
-	}
-}
 
 func newObjectCache() map[string]interface{} {
 	return map[string]interface{}{"guid": make([]string, 0), "now": make([]string, 0), "country": make([]string, 0)}
 }
 
-func buildSQL(inputTemplate string) (string, error) {
+// ParseTemplate will take an input string of text, and replace any recongized
+// tokens with a random value that is determined for each type of token
+func ParseTemplate(inputTemplate string) (string, error) {
 	// Supports:
 	// {guid:ordinal}
 	// {int:lower:upper}
 	// {now:ordinal}
 	// {float:lower:upper}
 	// {char:num:case}
+	// {country:case:ordinal}
 	objectCache := newObjectCache()
 	var result bytes.Buffer
 	var wordBuffer bytes.Buffer
@@ -294,14 +260,32 @@ func char(opts ...string) (string, error) {
 		numChars = nc
 	}
 
-	result := make([]byte, numChars)
-	for i := 0; i < numChars; i++ {
-		result[i] = randomChars[rand.Intn(len(randomChars))]
-	}
+	result := generateRandomString(numChars)
+
 	if charCase == "up" {
 		return strings.ToUpper(string(result)), nil
 	}
 	return string(result), nil
+}
+
+func generateRandomString(length int) string {
+	rarr := make([]rune, length)
+	for i := 0; i < length; i++ {
+		// First, pick which range this character comes from
+		o := rand.Intn(len(PrintableRanges))
+		r := PrintableRanges[o]
+
+		minCharCode := r[0]
+		maxCharCode := r[1]
+
+		// Get the delata between max and min
+		diff := maxCharCode - minCharCode
+		// Get a random value within the range specified
+		num := rand.Intn(diff) + minCharCode
+		// Turn it into a rune, set it on the result object
+		rarr[i] = rune(num)
+	}
+	return string(rarr)
 }
 
 func now(objectCache map[string]interface{}, opts ...string) (string, error) {
@@ -318,7 +302,7 @@ func now(objectCache map[string]interface{}, opts ...string) (string, error) {
 		}
 		return cache[ordinal], nil
 	}
-	now := time.Now().Format(time.RFC3339)
+	now := time.Now().Format(SimpleTimeFormat)
 
 	// store it in the cache
 	c, _ := objectCache["now"]
@@ -352,39 +336,4 @@ func guid(objectCache map[string]interface{}, opts ...string) (string, error) {
 
 	return guid, nil
 
-}
-
-// I went with an ENV var based config sheerly out of simplicity sake. I'm considering
-// moving to CLI based flags instead but not worth it at the moment
-func getConfig() (*config, error) {
-	duration := os.Getenv("MS_PAUSEINTERVAL")
-	if duration == "" {
-		return nil, errors.New("MS_PAUSEINTERVAL must be set")
-	}
-	d, err := time.ParseDuration(duration)
-	if err != nil {
-		return nil, err
-	}
-	iterations := -1
-	i := os.Getenv("MS_ITERATIONS")
-	if iterations, err = strconv.Atoi(i); err != nil {
-		return nil, errors.New("MS_ITERATIONS must be a valid integer (-1 for unlimited)")
-	}
-
-	cfg := &config{
-		connString:    os.Getenv("MS_CONNSTRING"),
-		input:         os.Getenv("MS_INPUT"),
-		pauseInterval: d,
-		iterations:    iterations,
-	}
-
-	if cfg.connString == "" {
-		return nil, errors.New("MS_CONNSTRING must be set")
-	}
-
-	if cfg.input == "" {
-		return nil, errors.New("MS_INPUT must be set")
-	}
-
-	return cfg, nil
 }
