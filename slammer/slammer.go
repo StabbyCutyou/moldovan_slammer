@@ -1,25 +1,24 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"os"
-	"strconv"
+	"strings"
 	"time"
 
-	"github.com/StabbyCutyou/moldovan_slammer/moldova"
 	// Load the driver only
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type config struct {
 	connString    string
-	input         string
 	pauseInterval time.Duration
-	iterations    int
 }
 
 func init() {
@@ -37,20 +36,22 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	for i := 0; i < cfg.iterations; i++ {
+	input := bufio.NewReader(os.Stdin)
+	err = nil
+	line := ""
+	for err != io.EOF {
 		// Build the line
-		line, err := moldova.ParseTemplate(cfg.input)
+		line, err = input.ReadString('\n')
+		line = strings.TrimRight(line, "\r\n")
 		// Import it into sql here
 		if err == nil {
 			_, err2 := db.Exec(line)
 			if err2 != nil {
 				fmt.Println(err2)
+			} else {
+				time.Sleep(cfg.pauseInterval)
 			}
-		} else if err != nil {
-			fmt.Println("Could not generate SQL: " + err.Error())
 		}
-		time.Sleep(cfg.pauseInterval)
 	}
 }
 
@@ -65,25 +66,14 @@ func getConfig() (*config, error) {
 	if err != nil {
 		return nil, err
 	}
-	iterations := -1
-	i := os.Getenv("MS_ITERATIONS")
-	if iterations, err = strconv.Atoi(i); err != nil {
-		return nil, errors.New("MS_ITERATIONS must be a valid integer (-1 for unlimited)")
-	}
 
 	cfg := &config{
 		connString:    os.Getenv("MS_CONNSTRING"),
 		pauseInterval: d,
-		input:         os.Getenv("MS_INPUT"),
-		iterations:    iterations,
 	}
 
 	if cfg.connString == "" {
 		return nil, errors.New("MS_CONNSTRING must be set")
-	}
-
-	if cfg.input == "" {
-		return nil, errors.New("MS_INPUT must be set")
 	}
 
 	return cfg, nil
