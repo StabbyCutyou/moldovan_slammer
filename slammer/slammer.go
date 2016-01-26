@@ -40,6 +40,8 @@ func main() {
 	input := bufio.NewReader(os.Stdin)
 	err = nil
 	line := ""
+	start := time.Now()
+	errorCount := 0
 	for err != io.EOF {
 		// Build the line
 		line, err = input.ReadString('\n')
@@ -48,12 +50,18 @@ func main() {
 		if err == nil {
 			_, err2 := db.Exec(line)
 			if err2 != nil {
+				errorCount++
 				fmt.Println(err2)
 			} else {
 				time.Sleep(cfg.pauseInterval)
 			}
 		}
 	}
+	end := time.Now()
+	diff := end.Sub(start)
+	fmt.Println("Slammer Status:")
+	fmt.Printf("Started at %s , Ended at %s, took %s\n", start.Format("2006-01-02 15:04:05"), end.Format("2006-01-02 15:04:05"), diff.String())
+	fmt.Printf("Total errors: %d , Errors per second: %f\n", errorCount, float64(errorCount)/diff.Seconds())
 }
 
 // I went with an ENV var based config sheerly out of simplicity sake. I'm considering
