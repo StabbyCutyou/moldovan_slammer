@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -20,14 +19,17 @@ import (
 type config struct {
 	connString    string
 	pauseInterval time.Duration
+	workers       int
 }
 
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
+type result struct {
+	start     time.Time
+	end       time.Time
+	workCount int
+	errors    int
 }
 
 func main() {
-	fmt.Print("Welcome to the Moldovan Slammer\n")
 	cfg, err := getConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -37,31 +39,65 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Declare the channel we'll be using
+	inputChan := make(chan (string))
+	// Declare the channel that will gather results
+	outputChan := make(chan (result), cfg.workers)
+
+	// Start the pool of workers up, reading from the channel
+	for i := 0; i < cfg.workers; i++ {
+		go func(ic <-chan string, oc chan<- result, d *sql.DB, pause time.Duration) {
+			r := result{start: time.Now()}
+			for line := range ic {
+				_, err := db.Exec(line)
+				r.workCount++
+				if err != nil {
+					r.errors++
+					//fmt.Println(err)
+				} else {
+					time.Sleep(pause)
+				}
+			}
+			r.end = time.Now()
+			oc <- r
+		}(inputChan, outputChan, db, cfg.pauseInterval)
+	}
+
+	// Read from STDIN in the main thread
 	input := bufio.NewReader(os.Stdin)
 	err = nil
 	line := ""
-	start := time.Now()
-	errorCount := 0
 	for err != io.EOF {
-		// Build the line
 		line, err = input.ReadString('\n')
-		line = strings.TrimRight(line, "\r\n")
-		// Import it into sql here
 		if err == nil {
-			_, err2 := db.Exec(line)
-			if err2 != nil {
-				errorCount++
-				fmt.Println(err2)
-			} else {
-				time.Sleep(cfg.pauseInterval)
-			}
+			fmt.Println(line)
+			line = strings.TrimRight(line, "\r\n")
+
+			inputChan <- line
+		} else {
+			fmt.Println(err)
 		}
 	}
-	end := time.Now()
-	diff := end.Sub(start)
+
+	fmt.Printf("HEY")
+
+	// Close the channel, since it's done receiving input
+	close(inputChan)
+
+	// Collect all results, report them. This will block and wait until all results
+	// are in
+
 	fmt.Println("Slammer Status:")
-	fmt.Printf("Started at %s , Ended at %s, took %s\n", start.Format("2006-01-02 15:04:05"), end.Format("2006-01-02 15:04:05"), diff.String())
-	fmt.Printf("Total errors: %d , Errors per second: %f\n", errorCount, float64(errorCount)/diff.Seconds())
+	for i := 0; i < cfg.workers; i++ {
+		r := <-outputChan
+		diff := r.end.Sub(r.start)
+		fmt.Printf("Worker #%d\n", i)
+		fmt.Printf("Started at %s , Ended at %s, took %s\n", r.start.Format("2006-01-02 15:04:05"), r.end.Format("2006-01-02 15:04:05"), diff.String())
+		fmt.Printf("Total errors: %d , Percentage errors: %f, Average errors per second: %f\n", r.errors, float64(r.errors)/float64(r.workCount), float64(r.errors)/diff.Seconds())
+	}
+
+	close(outputChan)
 }
 
 // I went with an ENV var based config sheerly out of simplicity sake. I'm considering
@@ -69,6 +105,7 @@ func main() {
 func getConfig() (*config, error) {
 	p := flag.String("p", "1s", "The time to pause between each call to the database")
 	c := flag.String("c", "", "The connection string to use when connecting to the database")
+	w := flag.Int("w", 1, "The number of workers to use. A number greater than 1 will enable statements to be issued concurrently")
 	flag.Parse()
 
 	if *c == "" {
@@ -79,5 +116,9 @@ func getConfig() (*config, error) {
 		return nil, errors.New("You must provide a proper duration value with -p")
 	}
 
-	return &config{connString: *c, pauseInterval: d}, nil
+	if *w <= 0 {
+		return nil, errors.New("You must provide a worker count > 0 with -w")
+	}
+
+	return &config{connString: *c, pauseInterval: d, workers: *w}, nil
 }
