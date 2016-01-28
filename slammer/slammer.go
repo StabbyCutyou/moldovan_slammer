@@ -20,6 +20,7 @@ type config struct {
 	connString    string
 	pauseInterval time.Duration
 	workers       int
+	debugMode     bool
 }
 
 type result struct {
@@ -47,21 +48,23 @@ func main() {
 
 	// Start the pool of workers up, reading from the channel
 	for i := 0; i < cfg.workers; i++ {
-		go func(ic <-chan string, oc chan<- result, d *sql.DB, pause time.Duration) {
+		go func(ic <-chan string, oc chan<- result, d *sql.DB, pause time.Duration, debugMode bool) {
 			r := result{start: time.Now()}
 			for line := range ic {
 				_, err := db.Exec(line)
 				r.workCount++
 				if err != nil {
 					r.errors++
-					//fmt.Println(err)
+					if debugMode {
+						log.Println(err)
+					}
 				} else {
 					time.Sleep(pause)
 				}
 			}
 			r.end = time.Now()
 			oc <- r
-		}(inputChan, outputChan, db, cfg.pauseInterval)
+		}(inputChan, outputChan, db, cfg.pauseInterval, cfg.debugMode)
 	}
 
 	// Read from STDIN in the main thread
@@ -75,12 +78,10 @@ func main() {
 			line = strings.TrimRight(line, "\r\n")
 
 			inputChan <- line
-		} else {
-			fmt.Println(err)
+		} else if cfg.debugMode {
+			log.Println(err)
 		}
 	}
-
-	fmt.Printf("HEY")
 
 	// Close the channel, since it's done receiving input
 	close(inputChan)
@@ -92,11 +93,12 @@ func main() {
 	for i := 0; i < cfg.workers; i++ {
 		r := <-outputChan
 		diff := r.end.Sub(r.start)
-		fmt.Printf("Worker #%d\n", i)
-		fmt.Printf("Started at %s , Ended at %s, took %s\n", r.start.Format("2006-01-02 15:04:05"), r.end.Format("2006-01-02 15:04:05"), diff.String())
-		fmt.Printf("Total errors: %d , Percentage errors: %f, Average errors per second: %f\n", r.errors, float64(r.errors)/float64(r.workCount), float64(r.errors)/diff.Seconds())
+		fmt.Printf("---- Worker #%d ----\n", i)
+		fmt.Printf("  Started at %s , Ended at %s, took %s\n", r.start.Format("2006-01-02 15:04:05"), r.end.Format("2006-01-02 15:04:05"), diff.String())
+		fmt.Printf("  Total errors: %d , Percentage errors: %f, Average errors per second: %f\n", r.errors, float64(r.errors)/float64(r.workCount), float64(r.errors)/diff.Seconds())
 	}
 
+	// Lets just be nice and tidy
 	close(outputChan)
 }
 
@@ -106,12 +108,13 @@ func getConfig() (*config, error) {
 	p := flag.String("p", "1s", "The time to pause between each call to the database")
 	c := flag.String("c", "", "The connection string to use when connecting to the database")
 	w := flag.Int("w", 1, "The number of workers to use. A number greater than 1 will enable statements to be issued concurrently")
+	d := flag.Bool("d", false, "Debug mode - turn this on to have errors printed to the terminal")
 	flag.Parse()
 
 	if *c == "" {
 		return nil, errors.New("You must provide a connection string using the -c option")
 	}
-	d, err := time.ParseDuration(*p)
+	pi, err := time.ParseDuration(*p)
 	if err != nil {
 		return nil, errors.New("You must provide a proper duration value with -p")
 	}
@@ -120,5 +123,5 @@ func getConfig() (*config, error) {
 		return nil, errors.New("You must provide a worker count > 0 with -w")
 	}
 
-	return &config{connString: *c, pauseInterval: d, workers: *w}, nil
+	return &config{connString: *c, pauseInterval: pi, workers: *w, debugMode: *d}, nil
 }
