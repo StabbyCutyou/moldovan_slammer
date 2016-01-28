@@ -48,9 +48,10 @@ func main() {
 	outputChan := make(chan (result), cfg.workers)
 	// Declare a waitgroup to help prevent log interleaving - I technically do not
 	// need one, but without it, I find there are stray log messages creeping into
-	// the final report. Setting sync() on STDOUT didn't seem to fix it
+	// the final report. Setting sync() on STDOUT/ERR didn't seem to fix it.
 	var wg sync.WaitGroup
 	wg.Add(cfg.workers)
+
 	// Start the pool of workers up, reading from the channel
 	for i := 0; i < cfg.workers; i++ {
 		go func(workerNum int, ic <-chan string, oc chan<- result, d *sql.DB, done *sync.WaitGroup, pause time.Duration, debugMode bool) {

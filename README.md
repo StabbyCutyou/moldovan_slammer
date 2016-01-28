@@ -47,22 +47,6 @@ The command accepts 2 arguments:
 
 Experimental - could change at a notice. Or, without notice. Have fun!
 
-# Example usage
-
-Right now, the Slammer gets configured via environment variables. This may change to a flag-based approach in the future.
-
-### MS_CONNSTRING
-The connection string for your database
-
-### MS_INPUT
-The template you wish to turn into a series of inserts - see below for examples
-
-### MS_PAUSEINTERVAL
-A valid time.Duration parsable string representing how long to wait in between each run of the statement.
-
-### MS_ITERATIONS
-How many times to run the statements overall
-
 ## Example
 
 ```bash
