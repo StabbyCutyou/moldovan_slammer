@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	// Load the driver only
@@ -45,18 +46,25 @@ func main() {
 	inputChan := make(chan (string))
 	// Declare the channel that will gather results
 	outputChan := make(chan (result), cfg.workers)
-
+	// Declare a waitgroup to help prevent log interleaving - I technically do not
+	// need one, but without it, I find there are stray log messages creeping into
+	// the final report. Setting sync() on STDOUT didn't seem to fix it
+	var wg sync.WaitGroup
+	wg.Add(cfg.workers)
 	// Start the pool of workers up, reading from the channel
 	for i := 0; i < cfg.workers; i++ {
-		go func(ic <-chan string, oc chan<- result, d *sql.DB, pause time.Duration, debugMode bool) {
+		go func(workerNum int, ic <-chan string, oc chan<- result, d *sql.DB, done *sync.WaitGroup, pause time.Duration, debugMode bool) {
 			r := result{start: time.Now()}
 			for line := range ic {
+				if debugMode {
+					log.Printf("Worker #%d: About to run %s", workerNum, line)
+				}
 				_, err := db.Exec(line)
 				r.workCount++
 				if err != nil {
 					r.errors++
 					if debugMode {
-						log.Println(err)
+						log.Printf("Worker #%d: %s", workerNum, err.Error())
 					}
 				} else {
 					time.Sleep(pause)
@@ -64,7 +72,8 @@ func main() {
 			}
 			r.end = time.Now()
 			oc <- r
-		}(inputChan, outputChan, db, cfg.pauseInterval, cfg.debugMode)
+			done.Done()
+		}(i, inputChan, outputChan, db, &wg, cfg.pauseInterval, cfg.debugMode)
 	}
 
 	// Read from STDIN in the main thread
@@ -74,7 +83,6 @@ func main() {
 	for err != io.EOF {
 		line, err = input.ReadString('\n')
 		if err == nil {
-			fmt.Println(line)
 			line = strings.TrimRight(line, "\r\n")
 
 			inputChan <- line
@@ -85,10 +93,9 @@ func main() {
 
 	// Close the channel, since it's done receiving input
 	close(inputChan)
-
+	wg.Wait()
 	// Collect all results, report them. This will block and wait until all results
 	// are in
-
 	fmt.Println("Slammer Status:")
 	for i := 0; i < cfg.workers; i++ {
 		r := <-outputChan
