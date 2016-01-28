@@ -35,7 +35,7 @@ Slammer comes as a binary executable, and accepts lines of SQL in via STDIN.
 To use the command, first install
 
 ```bash
-go install github.com/StabbyCutyou/moldovan_slammer/moldova/cmd/moldova
+go install github.com/StabbyCutyou/moldovan_slammer/slammer
 ```
 
 The command accepts 2 arguments:
