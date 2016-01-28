@@ -57,9 +57,6 @@ func main() {
 		go func(workerNum int, ic <-chan string, oc chan<- result, d *sql.DB, done *sync.WaitGroup, pause time.Duration, debugMode bool) {
 			r := result{start: time.Now()}
 			for line := range ic {
-				if debugMode {
-					log.Printf("Worker #%d: About to run %s", workerNum, line)
-				}
 				_, err := db.Exec(line)
 				r.workCount++
 				if err != nil {
@@ -81,12 +78,14 @@ func main() {
 	input := bufio.NewReader(os.Stdin)
 	err = nil
 	line := ""
+	totalWorkCount := 0
 	for err != io.EOF {
 		line, err = input.ReadString('\n')
 		if err == nil {
 			line = strings.TrimRight(line, "\r\n")
 
 			inputChan <- line
+			totalWorkCount++
 		} else if cfg.debugMode {
 			log.Println(err)
 		}
@@ -98,11 +97,13 @@ func main() {
 	// Collect all results, report them. This will block and wait until all results
 	// are in
 	fmt.Println("Slammer Status:")
+	fmt.Printf("Queries to run: %d\n", totalWorkCount)
 	for i := 0; i < cfg.workers; i++ {
 		r := <-outputChan
 		diff := r.end.Sub(r.start)
 		fmt.Printf("---- Worker #%d ----\n", i)
 		fmt.Printf("  Started at %s , Ended at %s, took %s\n", r.start.Format("2006-01-02 15:04:05"), r.end.Format("2006-01-02 15:04:05"), diff.String())
+		fmt.Printf("  Total work: %d, Percentage work: %f\n", r.workCount, float64(r.workCount)/float64(totalWorkCount))
 		fmt.Printf("  Total errors: %d , Percentage errors: %f, Average errors per second: %f\n", r.errors, float64(r.errors)/float64(r.workCount), float64(r.errors)/diff.Seconds())
 	}
 
