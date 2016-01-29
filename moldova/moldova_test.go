@@ -1,6 +1,9 @@
 package moldova
 
-import "testing"
+import (
+	"strconv"
+	"testing"
+)
 
 // TODO Test each random function individually, under a number of inputs to make supported
 // all the options behave as expected.
@@ -18,6 +21,37 @@ func TestCountries(t *testing.T) {
 	_, err := ParseTemplate(template)
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestInteger(t *testing.T) {
+	template := "{int:5:6}"
+	tp, err := ParseTemplate(template)
+	if err != nil {
+		t.Error(err)
+	}
+	c, err := strconv.Atoi(tp)
+	if err != nil {
+		t.Error(err)
+	}
+	if c < 5 || c > 6 {
+		t.Error("Integer out of range")
+	}
+}
+
+func TestNowOrdinal(t *testing.T) {
+	template := "{now:1}"
+	_, err := ParseTemplate(template)
+	if err == nil {
+		t.Error("Did not return an error on an invalid {now} ordinal")
+	}
+}
+
+func TestGuidOrdinal(t *testing.T) {
+	template := "{guid:1}"
+	_, err := ParseTemplate(template)
+	if err == nil {
+		t.Error("Did not return an error on an invalid {gui} ordinal")
 	}
 }
 

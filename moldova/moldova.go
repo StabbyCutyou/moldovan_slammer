@@ -1,3 +1,6 @@
+// Package moldova is a lightweight generator of random data, based on a provided
+// template. It supports a number of tokens which will be replaced with random values,
+// based on the type and arguments of each token.
 package moldova
 
 import (
@@ -26,15 +29,15 @@ func newObjectCache() map[string]interface{} {
 }
 
 // ParseTemplate will take an input string of text, and replace any recongized
-// tokens with a random value that is determined for each type of token
+// tokens with a random value that is determined for each type of token.
+// It supports:
+// {guid:ordinal}
+// {int:lower:upper}
+// {now:ordinal}
+// {float:lower:upper}
+// {char:num:case}
+// {country:case:ordinal}
 func ParseTemplate(inputTemplate string) (string, error) {
-	// Supports:
-	// {guid:ordinal}
-	// {int:lower:upper}
-	// {now:ordinal}
-	// {float:lower:upper}
-	// {char:num:case}
-	// {country:case:ordinal}
 	objectCache := newObjectCache()
 	var result bytes.Buffer
 	var wordBuffer bytes.Buffer

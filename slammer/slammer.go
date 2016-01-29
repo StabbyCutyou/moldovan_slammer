@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Declare the channel we'll be using
+	// Declare the channel we'll be using as a work queue
 	inputChan := make(chan (string))
 	// Declare the channel that will gather results
 	outputChan := make(chan (result), cfg.workers)
@@ -54,36 +54,45 @@ func main() {
 
 	// Start the pool of workers up, reading from the channel
 	for i := 0; i < cfg.workers; i++ {
+		// Pass in everything it needs
 		go func(workerNum int, ic <-chan string, oc chan<- result, d *sql.DB, done *sync.WaitGroup, pause time.Duration, debugMode bool) {
+			// Prep the result object
 			r := result{start: time.Now()}
 			for line := range ic {
 				_, err := db.Exec(line)
+				// TODO should this be after the err != nil? It counts towards work attempted
+				// but not work completed.
 				r.workCount++
 				if err != nil {
 					r.errors++
 					if debugMode {
-						log.Printf("Worker #%d: %s", workerNum, err.Error())
+						log.Printf("Worker #%d: %s - %s", workerNum, line, err.Error())
 					}
 				} else {
+					// Sleep for the configured amount of pause time between each call
 					time.Sleep(pause)
 				}
 			}
+			// Let everyone know we're done, and bail out
 			r.end = time.Now()
 			oc <- r
 			done.Done()
 		}(i, inputChan, outputChan, db, &wg, cfg.pauseInterval, cfg.debugMode)
 	}
 
-	// Read from STDIN in the main thread
-	input := bufio.NewReader(os.Stdin)
+	// Warm up error and line so I can use error in the for loop with running into
+	// a shadowing issue
 	err = nil
 	line := ""
 	totalWorkCount := 0
+	// Read from STDIN in the main thread
+	input := bufio.NewReader(os.Stdin)
 	for err != io.EOF {
 		line, err = input.ReadString('\n')
 		if err == nil {
+			// Get rid of any unwanted stuff
 			line = strings.TrimRight(line, "\r\n")
-
+			// Push that onto the work queue
 			inputChan <- line
 			totalWorkCount++
 		} else if cfg.debugMode {
@@ -93,6 +102,10 @@ func main() {
 
 	// Close the channel, since it's done receiving input
 	close(inputChan)
+	// As I mentioned above, because workers wont finish at the same time, I need
+	// to use a waitgroup, otherwise the output below gets potentially mixed in with
+	// debug or error messages from the workers. The waitgroup semaphore prevents this
+	// even though it probably looks redundant
 	wg.Wait()
 	// Collect all results, report them. This will block and wait until all results
 	// are in
@@ -103,7 +116,7 @@ func main() {
 		diff := r.end.Sub(r.start)
 		fmt.Printf("---- Worker #%d ----\n", i)
 		fmt.Printf("  Started at %s , Ended at %s, took %s\n", r.start.Format("2006-01-02 15:04:05"), r.end.Format("2006-01-02 15:04:05"), diff.String())
-		fmt.Printf("  Total work: %d, Percentage work: %f\n", r.workCount, float64(r.workCount)/float64(totalWorkCount))
+		fmt.Printf("  Total work: %d, Percentage work: %f, Average work per second: %f\n", r.workCount, float64(r.workCount)/float64(totalWorkCount), float64(r.workCount)/diff.Seconds())
 		fmt.Printf("  Total errors: %d , Percentage errors: %f, Average errors per second: %f\n", r.errors, float64(r.errors)/float64(r.workCount), float64(r.errors)/diff.Seconds())
 	}
 
@@ -111,8 +124,6 @@ func main() {
 	close(outputChan)
 }
 
-// I went with an ENV var based config sheerly out of simplicity sake. I'm considering
-// moving to CLI based flags instead but not worth it at the moment
 func getConfig() (*config, error) {
 	p := flag.String("p", "1s", "The time to pause between each call to the database")
 	c := flag.String("c", "", "The connection string to use when connecting to the database")

@@ -80,7 +80,7 @@ to back-reference existing generated values, for when you need something repeate
 ## {now:ordinal}
 
 Slammer will replace any instance of {now} with a string representation of Golangs
-time.Now() function, formatted per the time.RFC3339 format.
+time.Now() function, formatted per the golang date format example: "2006-01-02 15:04:05".
 
 {now} also supports the same :ordinal option as {guid}
 
@@ -121,7 +121,7 @@ Slammer will replace any instance of {country} with an ISO 3166-1 alpha-2 countr
 
 # Roadmap
 
-I'll continue to add support for more random value categories, such as a general {time} field, as well as additions to existing ones (for example, a timezone param for :now)
+I'll continue to add support for more random value categories, such as a general {time} field, as well as additions to existing ones (for example, a timezone param for :now, as well as the ability to choose a formatting method).
 
 I also want to come up with a better internal design for how the interpreter is organized and architected, but I'm waiting until I have a more complete feature set before I tackle an overall re-design of the current implementation.
 
