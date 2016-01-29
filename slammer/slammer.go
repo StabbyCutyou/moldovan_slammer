@@ -13,12 +13,15 @@ import (
 	"sync"
 	"time"
 
-	// Load the driver only
+	// Load the drivers
+	// MySQL
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 type config struct {
 	connString    string
+	db            string
 	pauseInterval time.Duration
 	workers       int
 	debugMode     bool
@@ -37,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := sql.Open("mysql", cfg.connString)
+	db, err := sql.Open(cfg.db, cfg.connString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -127,6 +130,7 @@ func main() {
 func getConfig() (*config, error) {
 	p := flag.String("p", "1s", "The time to pause between each call to the database")
 	c := flag.String("c", "", "The connection string to use when connecting to the database")
+	db := flag.String("db", "mysql", "The database driver to load. Defaults to mysql")
 	w := flag.Int("w", 1, "The number of workers to use. A number greater than 1 will enable statements to be issued concurrently")
 	d := flag.Bool("d", false, "Debug mode - turn this on to have errors printed to the terminal")
 	flag.Parse()
@@ -143,5 +147,5 @@ func getConfig() (*config, error) {
 		return nil, errors.New("You must provide a worker count > 0 with -w")
 	}
 
-	return &config{connString: *c, pauseInterval: pi, workers: *w, debugMode: *d}, nil
+	return &config{db: *db, connString: *c, pauseInterval: pi, workers: *w, debugMode: *d}, nil
 }
