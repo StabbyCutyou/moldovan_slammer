@@ -1,7 +1,7 @@
 Moldovan Slammer
 ==================
 
-The Moldovan Slammer a helper / tutorial repo for using [Moldova](github.com/StabbyCutyou/moldova), and the [Slammer](github.com/StabbyCutyou/slammer).
+The Moldovan Slammer a helper / tutorial repo for using [Moldova](https://github.com/StabbyCutyou/moldova), and the [Slammer](https://github.com/StabbyCutyou/slammer).
 It's designed to demonstrate how to use both of the libraries together to generate random data for database load testing.
 
 If you're not familiar with those packages, i'd suggest checking them out first. But at a high level,
