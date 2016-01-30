@@ -30,6 +30,7 @@ type config struct {
 type result struct {
 	start     time.Time
 	end       time.Time
+	dbTime    time.Duration
 	workCount int
 	errors    int
 }
@@ -62,7 +63,9 @@ func main() {
 			// Prep the result object
 			r := result{start: time.Now()}
 			for line := range ic {
+				t := time.Now()
 				_, err := db.Exec(line)
+				r.dbTime += time.Since(t)
 				// TODO should this be after the err != nil? It counts towards work attempted
 				// but not work completed.
 				r.workCount++
@@ -116,11 +119,11 @@ func main() {
 	fmt.Printf("Queries to run: %d\n", totalWorkCount)
 	for i := 0; i < cfg.workers; i++ {
 		r := <-outputChan
-		diff := r.end.Sub(r.start)
+		workerDuration := r.end.Sub(r.start)
 		fmt.Printf("---- Worker #%d ----\n", i)
-		fmt.Printf("  Started at %s , Ended at %s, took %s\n", r.start.Format("2006-01-02 15:04:05"), r.end.Format("2006-01-02 15:04:05"), diff.String())
-		fmt.Printf("  Total work: %d, Percentage work: %f, Average work per second: %f\n", r.workCount, float64(r.workCount)/float64(totalWorkCount), float64(r.workCount)/diff.Seconds())
-		fmt.Printf("  Total errors: %d , Percentage errors: %f, Average errors per second: %f\n", r.errors, float64(r.errors)/float64(r.workCount), float64(r.errors)/diff.Seconds())
+		fmt.Printf("  Started at %s , Ended at %s, Worker time %s, DB time %s\n", r.start.Format("2006-01-02 15:04:05"), r.end.Format("2006-01-02 15:04:05"), workerDuration.String(), r.dbTime)
+		fmt.Printf("  Total work: %d, Percentage work: %f, Average work over DB time: %f\n", r.workCount, float64(r.workCount)/float64(totalWorkCount), float64(r.workCount)/float64(r.dbTime))
+		fmt.Printf("  Total errors: %d , Percentage errors: %f, Average errors per second: %f\n", r.errors, float64(r.errors)/float64(r.workCount), float64(r.errors)/workerDuration.Seconds())
 	}
 
 	// Lets just be nice and tidy
