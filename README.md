@@ -15,7 +15,7 @@ You can use them together in a few ways. The first is to simply pipe the output 
 moldova into the slammer, like so
 
 ```bash
-moldova -t "INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{float:-1000.0:-540.0},{int:1:40},'{now}','{now:0}','{country:up}',NULL,-3)" -n 100 | slammer -c "root@tcp(10.248.5.220:3306)/tapjoy_db" -p 200us -w 2
+moldova -t "INSERT INTO floof VALUES ('{guid}','{guid:ordinal:0}','{country}',{int:min:-2000|max:0},{int:min:100:|max:1000},{float:min:-1000.0|max:-540.0},{int:min:1|max:40},'{now}','{now:ordinal:0}','{country:case:up}',NULL,-3)" -n 100 | slammer -c "root@tcp(10.248.5.220:3306)/tapjoy_db" -p 200us -w 2
 ```
 
 This will generate a new list of random data for every insert statement
@@ -23,7 +23,7 @@ This will generate a new list of random data for every insert statement
 You could also pre-generate a series of statements, and issue them against slammer sepparately, like so
 
 ```bash
-moldova -t "INSERT INTO floof VALUES ('{guid}','{guid:0}','{country}',{int:-2000:0},{int:100:1000},{float:-1000.0:-540.0},{int:1:40},'{now}','{now:0}','{country:up}',NULL,-3)" -n 100 > dbdata
+moldova -t "INSERT INTO floof VALUES ('{guid}','{guid:ordinal:0}','{country}',{int:min:-2000|max:0},{int:min:100:|max:1000},{float:min:-1000.0|max:-540.0},{int:min:1|max:40},'{now}','{now:ordinal:0}','{country:case:up}',NULL,-3)" -n 100 > dbdata
 slammer -c "root@tcp(10.248.5.220:3306)/tapjoy_db" -p 200us -w 2 < dbdata
 ```
 
